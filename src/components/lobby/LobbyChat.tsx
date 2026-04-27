@@ -43,8 +43,11 @@ const LobbyChat = ({ lobbyId, lobbyName, lobbyGame }: Props) => {
     let socket: Socket;
 
     const connect = () => {
-      // La cookie HttpOnly access_token viaja automáticamente con withCredentials
-      socket = io(BACKEND_URL, { withCredentials: true });
+      const token = localStorage.getItem("token");
+      socket = io(BACKEND_URL, {
+        withCredentials: true,
+        auth: { token },
+      });
       socketRef.current = socket;
 
       socket.on("connect", () => {
