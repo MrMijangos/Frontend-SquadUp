@@ -15,12 +15,6 @@ const gameAccent: Record<string, string> = {
   "Rocket League": "#3b82f6",
 };
 
-const activeLobbies = [
-  { title: "Ranked Squad", game: "Valorant", status: "open" },
-  { title: "Chill Games", game: "LoL", status: "open" },
-  { title: "Pro Team", game: "CS2", status: "full" },
-];
-
 const CreateLobby = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
