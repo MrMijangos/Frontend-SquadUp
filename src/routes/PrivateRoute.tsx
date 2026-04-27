@@ -5,8 +5,8 @@ interface Props {
 }
 
 const PrivateRoute = ({ children }: Props) => {
-  const user = localStorage.getItem("user");
-  if (!user) return <Navigate to="/login" replace />;
+  const token = localStorage.getItem("token");
+  if (!token) return <Navigate to="/login" replace />;
   return <>{children}</>;
 };
 

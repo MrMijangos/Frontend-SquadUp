@@ -15,7 +15,8 @@ export const useAuth = () => {
 
   useEffect(() => {
     const savedUser = getUser();
-    if (savedUser) {
+    const token = localStorage.getItem("token");
+    if (savedUser && token) {
       setUser(savedUser);
     }
     setLoading(false);

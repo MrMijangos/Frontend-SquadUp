@@ -37,13 +37,14 @@ export interface UserData {
 export interface LoginResponse {
   message: string;
   user: UserData;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export const login = async (payload: LoginPayload): Promise<LoginResponse> => {
   const res = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    credentials: "include",
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -52,6 +53,8 @@ export const login = async (payload: LoginPayload): Promise<LoginResponse> => {
   }
   const data: LoginResponse = await res.json();
   localStorage.setItem("user", JSON.stringify(data.user));
+  localStorage.setItem("token", data.accessToken);
+  localStorage.setItem("refreshToken", data.refreshToken);
   return data;
 };
 
@@ -97,25 +100,23 @@ export const deleteAccount = async (id: number): Promise<void> => {
     throw new Error(err.error || "Error al eliminar cuenta");
   }
   localStorage.removeItem("user");
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
 };
 
 export const logout = async () => {
-  await fetch(`${API_URL}/auth/logout`, { method: "POST", credentials: "include" });
+  await fetch(`${API_URL}/auth/logout`, { method: "POST" });
   localStorage.removeItem("user");
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
 };
 
-export const getToken = (): string | null => {
-  return localStorage.getItem("token");
-};
-
+export const getToken = (): string | null => localStorage.getItem("token");
 export const getUser = () => {
   const user = localStorage.getItem("user");
   return user ? JSON.parse(user) : null;
 };
-
-export const isAuthenticated = (): boolean => {
-  return !!getToken();
-};
+export const isAuthenticated = (): boolean => !!getToken();
 
 export const getAvatarUrl = (profile_picture: string | null): string | null => {
   if (!profile_picture) return null;

@@ -3,32 +3,53 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 let isRefreshing = false;
 
 export async function fetchWithAuth(input: string, init: RequestInit = {}): Promise<Response> {
-  const res = await fetch(input, { ...init, credentials: "include" });
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(input, {
+    ...init,
+    headers: {
+      ...init.headers,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
 
   if (res.status !== 401) return res;
 
-  // Si ya hay un refresh en curso no lo dupliques
   if (isRefreshing) {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     window.location.href = "/login";
     return res;
   }
 
   isRefreshing = true;
   try {
+    const refreshToken = localStorage.getItem("refreshToken");
     const refresh = await fetch(`${API_URL}/auth/refresh`, {
       method: "POST",
-      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
     });
 
     if (!refresh.ok) {
       localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
       window.location.href = "/login";
       return res;
     }
 
-    // Reintenta la petición original con el nuevo token en cookie
-    return fetch(input, { ...init, credentials: "include" });
+    const { accessToken } = await refresh.json();
+    localStorage.setItem("token", accessToken);
+
+    return fetch(input, {
+      ...init,
+      headers: {
+        ...init.headers,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
   } finally {
     isRefreshing = false;
   }
