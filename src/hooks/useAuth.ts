@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getUser, getToken, logout } from "../services/authService";
+import { getUser, logout } from "../services/authService";
 
 export interface AuthUser {
   id: number;
@@ -11,32 +11,31 @@ export interface AuthUser {
 
 export const useAuth = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: verificar token con backend (GET /api/auth/me)
     const savedUser = getUser();
-    const savedToken = getToken();
-    if (savedUser && savedToken) {
+    if (savedUser) {
       setUser(savedUser);
-      setToken(savedToken);
     }
     setLoading(false);
   }, []);
 
-  const signIn = (userData: AuthUser, authToken: string) => {
-    localStorage.setItem("token", authToken);
+  const signIn = (userData: AuthUser) => {
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
-    setToken(authToken);
   };
 
-  const signOut = () => {
-    logout();
+  const signOut = async () => {
+    await logout();
     setUser(null);
-    setToken(null);
   };
 
-  return { user, token, loading, signIn, signOut, isAuthenticated: !!token };
+  return {
+    user,
+    loading,
+    signIn,
+    signOut,
+    isAuthenticated: !!user,
+  };
 };

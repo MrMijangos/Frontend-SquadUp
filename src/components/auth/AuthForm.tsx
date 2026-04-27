@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../services/authService";
+import { useAuth } from "../../hooks/useAuth";
 
 const AuthForm = () => {
   const [email, setEmail] = useState("");
@@ -8,6 +9,7 @@ const AuthForm = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { signIn } = useAuth();
 
   const handleSubmit = async () => {
     if (!email.trim() || !password.trim()) {
@@ -17,7 +19,13 @@ const AuthForm = () => {
     setError(null);
     setLoading(true);
     try {
-      await login({ email, password });
+      const data = await login({ email, password });
+      signIn({
+        id: data.user.id,
+        username: data.user.name,
+        email: data.user.email,
+        avatar_url: data.user.profile_picture ?? undefined,
+      });
       navigate("/home");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al iniciar sesión");
@@ -35,18 +43,23 @@ const AuthForm = () => {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-purple-700 opacity-10 rounded-full blur-[100px] pointer-events-none" />
       <div className="w-full max-w-md relative z-10">
         <div className="flex items-center gap-2 mb-10">
-          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center" style={{boxShadow: '0 0 14px rgba(168,85,247,0.7), 0 0 28px rgba(168,85,247,0.3)'}}>
+          <div
+            className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center"
+            style={{ boxShadow: "0 0 14px rgba(168,85,247,0.7), 0 0 28px rgba(168,85,247,0.3)" }}
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" fill="white" strokeWidth="1" strokeLinejoin="round"/>
+              <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" fill="white" strokeWidth="1" strokeLinejoin="round" />
             </svg>
           </div>
           <span className="text-lg font-bold tracking-widest uppercase text-purple-300">SquadUp</span>
         </div>
+
         <h1 className="text-5xl font-black mb-2 leading-none">
           Bienvenido<br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">de nuevo.</span>
         </h1>
         <p className="text-gray-500 mb-10 text-sm tracking-wide">Inicia sesión en tu cuenta y únete al equipo.</p>
+
         <div className="space-y-4">
           <div>
             <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Correo electrónico</label>
@@ -59,6 +72,7 @@ const AuthForm = () => {
               className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:bg-white/10 transition-all"
             />
           </div>
+
           <div>
             <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Contraseña</label>
             <input
@@ -70,8 +84,11 @@ const AuthForm = () => {
               className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:bg-white/10 transition-all"
             />
           </div>
+
           <div className="flex justify-end">
-            <span className="text-xs text-purple-400 cursor-pointer hover:text-purple-300 transition">¿Olvidaste tu contraseña?</span>
+            <span className="text-xs text-purple-400 cursor-pointer hover:text-purple-300 transition">
+              ¿Olvidaste tu contraseña?
+            </span>
           </div>
 
           {error && (
@@ -87,10 +104,12 @@ const AuthForm = () => {
           >
             {loading ? "Iniciando sesión..." : "Iniciar sesión"}
           </button>
+
           <button className="w-full py-3 rounded-xl font-bold text-sm tracking-widest uppercase border border-white/10 bg-white/5 hover:bg-white/10 transition-all text-gray-400">
             Jugar como invitado
           </button>
         </div>
+
         <p className="mt-8 text-gray-500 text-sm text-center">
           ¿No tienes una cuenta?{" "}
           <button
